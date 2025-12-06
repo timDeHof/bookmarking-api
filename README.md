@@ -49,11 +49,11 @@ DATABASE_URL=postgres://bookmark_user:bookmark_password@localhost:5432/bookmark_
 4. Update the database import in your application to use PostgreSQL:
 
 ```typescript
-// Change from:
-import { db } from "./drizzle/database.ts";
-
 // To:
-import { db } from "./drizzle/database.postgres.ts";
+import { db } from './drizzle/database.postgres.ts'
+
+// Change from:
+import { db } from './drizzle/database.ts'
 ```
 
 5. Run the application:

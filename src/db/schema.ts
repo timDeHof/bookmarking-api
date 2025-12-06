@@ -1,19 +1,27 @@
+import { relations, sql } from "drizzle-orm";
 import {
+  integer,
   sqliteTable,
   text,
-  integer,
-  primaryKey,
 } from "drizzle-orm/sqlite-core";
-import { relations } from "drizzle-orm";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const bookmarks = sqliteTable("bookmarks", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   url: text("url").notNull(),
   title: text("title").notNull(),
   notes: text("notes"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(strftime('%s', 'now') * 1000)`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(strftime('%s', 'now') * 1000)`).$onUpdate(() => new Date()),
 });
+
+export const selectBookmarksSchema = createSelectSchema(bookmarks);
+export const insertBookmarkSchema = createInsertSchema(bookmarks, {
+  title: schema => schema.min(1).max(200),
+}).required({
+  url: true,
+  title: true,
+}).omit({ id: true, createdAt: true, updatedAt: true });
 
 export const bookmarkTags = sqliteTable("bookmark_tags", {
   id: integer("id").primaryKey({ autoIncrement: true }),

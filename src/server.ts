@@ -1,17 +1,17 @@
-import { Hono } from "hono";
-import { initializeDatabase, closeDatabase } from "./drizzle/database";
-import { DrizzleBookmarkRepository as BookmarkRepository } from "./drizzle/repository";
+import process from "node:process";
+
+import { closeDatabase, initializeDatabase } from "./db/database";
+import { DrizzleBookmarkRepository as BookmarkRepository } from "./db/repository";
+import createApp from "./lib/create-app";
 import {
   bookmarkSchema,
   bookmarkUpdateSchema,
-  BookmarkInput,
-  BookmarkUpdateInput,
 } from "./validation/bookmarkSchema";
 
 // Initialize database
 initializeDatabase();
 
-const app = new Hono();
+const app = createApp();
 
 // Health check endpoint
 app.get("/health", (c) => {
@@ -32,7 +32,8 @@ app.post("/bookmarks", async (c) => {
     });
 
     return c.json(bookmark, 201);
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       return c.json({ error: error.message }, 400);
     }
@@ -46,7 +47,8 @@ app.get("/bookmarks", async (c) => {
     const tagFilter = c.req.query("tag");
     const bookmarks = await BookmarkRepository.getAll(tagFilter);
     return c.json(bookmarks);
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       return c.json({ error: error.message }, 500);
     }
@@ -57,14 +59,15 @@ app.get("/bookmarks", async (c) => {
 // Get single bookmark
 app.get("/bookmarks/:id", async (c) => {
   try {
-    const id = parseInt(c.req.param("id"));
-    if (isNaN(id)) {
+    const id = Number.parseInt(c.req.param("id"));
+    if (Number.isNaN(id)) {
       return c.json({ error: "Invalid bookmark ID" }, 400);
     }
 
     const bookmark = await BookmarkRepository.getById(id);
     return c.json(bookmark);
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       if (error.message === "Bookmark not found") {
         return c.json({ error: error.message }, 404);
@@ -78,8 +81,8 @@ app.get("/bookmarks/:id", async (c) => {
 // Update bookmark
 app.put("/bookmarks/:id", async (c) => {
   try {
-    const id = parseInt(c.req.param("id"));
-    if (isNaN(id)) {
+    const id = Number.parseInt(c.req.param("id"));
+    if (Number.isNaN(id)) {
       return c.json({ error: "Invalid bookmark ID" }, 400);
     }
 
@@ -94,7 +97,8 @@ app.put("/bookmarks/:id", async (c) => {
     });
 
     return c.json(updatedBookmark);
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       if (error.message === "Bookmark not found") {
         return c.json({ error: error.message }, 404);
@@ -108,14 +112,15 @@ app.put("/bookmarks/:id", async (c) => {
 // Delete bookmark
 app.delete("/bookmarks/:id", async (c) => {
   try {
-    const id = parseInt(c.req.param("id"));
-    if (isNaN(id)) {
+    const id = Number.parseInt(c.req.param("id"));
+    if (Number.isNaN(id)) {
       return c.json({ error: "Invalid bookmark ID" }, 400);
     }
 
     await BookmarkRepository.delete(id);
     return c.json({ message: "Bookmark deleted successfully" });
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error) {
       return c.json({ error: error.message }, 500);
     }

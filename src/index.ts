@@ -1,10 +1,15 @@
-import app from "./server";
+import { serve } from "@hono/node-server";
 
-const port = process.env.PORT || 3000;
+import { env } from "@/env";
 
-console.log(`Server is running on port ${port}`);
+import app from "./app";
 
-export default {
-  port,
+const port = env.PORT || 3000;
+
+// eslint-disable-next-line no-console
+console.log(`Server is running on port http://localhost:${port}`);
+
+serve({
   fetch: app.fetch,
-};
+  port,
+});
